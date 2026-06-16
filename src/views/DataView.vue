@@ -13,12 +13,26 @@
       </div>
 
       <nav class="flex-1 py-4 px-2 space-y-2">
-        <a href="#" class="flex items-center px-3 py-2.5 text-blue-600 bg-blue-50 rounded-lg transition-colors">
-          <Icon icon="mdi:scale-balance" class="h-6 w-6 shrink-0" />
+        <button :class="{ 'bg-emerald-50': tabelAktif === 'utama'}" @click="tabelAktif = 'utama'" class="flex w-full items-center px-3 py-2.5 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors group/btn">
+          <Icon icon="mdi:home" class="h-6 w-6 shrink-0" />
           <span class="ml-4 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            Data Timbangan
+            Utama
           </span>
-        </a>
+        </button>
+
+        <button :class="{ 'bg-blue-50': tabelAktif === 'group1'}" @click="tabelAktif = 'group1'" class="flex w-full items-center px-3 py-2.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors group/btn">
+          <Icon icon="mdi:numeric-1-box-multiple" class="h-6 w-6 shrink-0" />
+          <span class="ml-4 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            Tabel Group 1
+          </span>
+        </button>
+
+        <button :class="{ 'bg-amber-50': tabelAktif === 'group2'}" @click="tabelAktif = 'group2'" class="flex w-full items-center px-3 py-2.5 text-amber-600 hover:bg-amber-100 rounded-lg transition-colors group/btn">
+          <Icon icon="mdi:numeric-2-box-multiple" class="h-6 w-6 shrink-0" />
+          <span class="ml-4 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            Tabel Group 2
+          </span>
+        </button>
       </nav>
 
       <div class="p-2 border-t border-gray-100">
@@ -39,12 +53,14 @@
       
       <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Data Timbangan</h1>
 
-      <div class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+      <div v-if="tabelAktif === 'utama'" class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
         <table class="w-full border-collapse border border-gray-200 text-center text-sm text-gray-700">
           <thead class="bg-gray-100 text-gray-800 font-semibold">
             <tr>
               <th rowspan="2" class="border border-gray-200 p-3">Tanggal & Waktu</th>
+              <th rowspan="2" class="border border-gray-200 p-3">ID Pemuatan</th>
               <th colspan="2" class="border border-gray-200 p-3 bg-blue-50/50 text-blue-800">Group 1</th>
+              <th rowspan="2" class="border border-gray-200 p-3">ID Pemuatan</th>
               <th colspan="2" class="border border-gray-200 p-3 bg-amber-50/50 text-amber-800">Group 2</th>
             </tr>
             <tr>
@@ -57,8 +73,58 @@
           <tbody>
             <tr v-for="item in dataTimbangan" :key="item.id" class="hover:bg-gray-50 transition-colors">
               <td class="border border-gray-200 p-3 font-mono text-gray-600">{{ item.waktu }}</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.id1 }}</td>
               <td class="border border-gray-200 p-3 font-medium">{{ item.t1 }} kg</td>
               <td class="border border-gray-200 p-3 font-medium">{{ item.t2 }} kg</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.id2 }}</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.t3 }} kg</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.t4 }} kg</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-if="tabelAktif === 'group1'" class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-200 text-center text-sm text-gray-700">
+          <thead class="bg-gray-100 text-gray-800 font-semibold">
+            <tr>
+              <th rowspan="2" class="border border-gray-200 p-3">Tanggal & Waktu</th>
+              <th rowspan="2" class="border border-gray-200 p-3">ID Pemuatan</th>
+              <th colspan="2" class="border border-gray-200 p-3 bg-blue-50/50 text-blue-800">Group 1</th>
+            </tr>
+            <tr>
+              <th class="border border-gray-200 p-2 bg-blue-50/30 text-gray-600">Timbangan 1</th>
+              <th class="border border-gray-200 p-2 bg-blue-50/30 text-gray-600">Timbangan 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in dataTimbangan" :key="item.id" class="hover:bg-gray-50 transition-colors">
+              <td class="border border-gray-200 p-3 font-mono text-gray-600">{{ item.waktu }}</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.id1 }}</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.t1 }} kg</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.t2 }} kg</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-if="tabelAktif === 'group2'" class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-200 text-center text-sm text-gray-700">
+          <thead class="bg-gray-100 text-gray-800 font-semibold">
+            <tr>
+              <th rowspan="2" class="border border-gray-200 p-3">Tanggal & Waktu</th>
+              <th rowspan="2" class="border border-gray-200 p-3">ID Pemuatan</th>
+              <th colspan="2" class="border border-gray-200 p-3 bg-amber-50/50 text-amber-800">Group 2</th>
+            </tr>
+            <tr>
+              <th class="border border-gray-200 p-2 bg-amber-50/30 text-gray-600">Timbangan 3</th>
+              <th class="border border-gray-200 p-2 bg-amber-50/30 text-gray-600">Timbangan 4</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in dataTimbangan" :key="item.id" class="hover:bg-gray-50 transition-colors">
+              <td class="border border-gray-200 p-3 font-mono text-gray-600">{{ item.waktu }}</td>
+              <td class="border border-gray-200 p-3 font-medium">{{ item.id2 }}</td>
               <td class="border border-gray-200 p-3 font-medium">{{ item.t3 }} kg</td>
               <td class="border border-gray-200 p-3 font-medium">{{ item.t4 }} kg</td>
             </tr>
@@ -83,10 +149,12 @@ const router = useRouter()
 // Variabel penanda apakah sidebar sedang disentuh kursor atau tidak
 const isHovered = ref(false)
 
+const tabelAktif = ref('utama')
+
 const dataTimbangan = ref([
-  { id: 1, waktu: '15:06:2026 08:00:12', t1: 250, t2: 245, t3: 310, t4: 305 },
-  { id: 2, waktu: '15:06:2026 10:15:45', t1: 260, t2: 255, t3: 315, t4: 312 },
-  { id: 3, waktu: '15:06:2026 13:30:22', t1: 248, t2: 250, t3: 308, t4: 300 }
+  { id: 1, waktu: '15:06:2026 08:00:12', id1: 'TRK-0001', t1: 250, t2: 245, id2: 'TRK-0001', t3: 310, t4: 305 },
+  { id: 2, waktu: '15:06:2026 10:15:45', id1: 'TRK-0002', t1: 260, t2: 255, id2: 'TRK-0002', t3: 315, t4: 312 },
+  { id: 3, waktu: '15:06:2026 13:30:22', id1: 'TRK-0003', t1: 248, t2: 250, id2: 'TRK-0003', t3: 308, t4: 300 }
 ])
 
 const logout = () => {
