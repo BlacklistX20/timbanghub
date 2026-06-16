@@ -10,13 +10,13 @@
       <form @submit.prevent="prosesLogin" class="space-y-4">
         <div>
           <label class="block text-gray-700 text-sm font-bold mb-2">Username: </label>
-          <input type="text" v-model="username" required 
+          <input type="text" v-model="username" placeholder="Masukkan Username" required 
                  class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         
         <div>
           <label class="block text-gray-700 text-sm font-bold mb-2">Password: </label>
-          <input type="password" v-model="password" required 
+          <input type="password" v-model="password" placeholder="Masukkan Password" required 
                  class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         
@@ -40,10 +40,11 @@ const router = useRouter()
 
 const prosesLogin = () => {
   if (username.value === 'admin' && password.value === '1234') {
-    alert('Login Berhasil! Mari kita ke halaman data.')
     router.push('/data') 
+  } else if (username.value === 'operator' && password.value === '1234') {
+    router.push('/operator')
   } else {
-    alert('Username atau Password salah! (Petunjuk: admin / 1234)')
+    alert('Username atau Password salah! ')
   }
 }
 </script>
