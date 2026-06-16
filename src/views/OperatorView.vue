@@ -1,7 +1,38 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-8 font-sans">
+  <div class="min-h-screen bg-gray-50 flex font-sans">
     
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Panel Operator Pemuatan</h1>
+    <aside 
+      @mouseenter="isHovered = true"
+      @mouseleave="isHovered = false"
+      class="fixed top-0 left-0 h-screen bg-white shadow-xl transition-all duration-300 w-16 hover:w-64 flex flex-col overflow-hidden group z-50"
+    >
+
+      <div class="h-16 flex items-center px-4 shrink-0 border-b border-gray-100">
+        <img src="@/assets/icon-timbanghub.png" alt="Icon" class="h-10 w-10 object-contain shrink-0">
+        <img src="@/assets/title-timbanghub.png" alt="TimbangHub" class="h-8 ml-2 object-contain shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      </div>
+
+      <nav class="flex-1 py-4 px-2 space-y-2">
+        
+      </nav>
+
+      <div class="p-2 border-t border-gray-100">
+        <button @click="logout" class="flex items-center w-full px-3 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+          <Icon icon="mdi:logout" class="h-6 w-6 shrink-0" />
+          <span class="ml-4 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            Keluar
+          </span>
+        </button>
+      </div>
+
+    </aside>
+
+    <main 
+      :class="isHovered ? 'ml-64' : 'ml-16'"
+      class="flex-1 p-8 w-full mx-auto transition-all duration-300"
+    >
+      
+      <h1 class="text-3xl font-bold text-gray-800 mb-6">Panel Operator Pemuatan</h1>
 
     <div class="mb-4">
       <button @click="isModalOpen = true" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm flex items-center transition-colors">
@@ -57,12 +88,16 @@
       </div>
     </div>
 
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
+
+// Variabel penanda apakah sidebar sedang disentuh kursor atau tidak
+const isHovered = ref(false)
 
 // Variabel State
 const isModalOpen = ref(false)
