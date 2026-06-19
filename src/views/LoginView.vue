@@ -1,32 +1,42 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-    
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+  <div class="min-h-screen flex items-center justify-center -m-8 bg-gray-950">
+    <div class="bg-gray-800 p-10 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+      <div class="text-center mb-8">
+        <img src="../assets/84364.png" alt="TimbangHub Logo" class="w-48 mx-auto mb-4" />
+        <p class="text-gray-400 text-sm">Masuk untuk mengakses dasbor timbangan.</p>
+      </div>
       
-      <img src="@/assets/logo-timbanghub.png" alt="TimbangHub Logo" class="mx-auto mb-2 m-auto h-auto">
-      
-      <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Halaman Login</h2>
-      
-      <form @submit.prevent="prosesLogin" class="space-y-4">
+      <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
-          <label class="block text-gray-700 text-sm font-bold mb-2">Username: </label>
-          <input type="text" v-model="username" placeholder="Masukkan Username" required 
-                 class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <label class="block text-gray-300 text-sm font-bold mb-2">Username</label>
+          <input 
+            v-model="username"
+            type="text" 
+            class="w-full bg-gray-900 text-white px-4 py-3 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
+            placeholder="Masukkan username" 
+            required 
+          />
         </div>
-        
         <div>
-          <label class="block text-gray-700 text-sm font-bold mb-2">Password: </label>
-          <input type="password" v-model="password" placeholder="Masukkan Password" required 
-                 class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <label class="block text-gray-300 text-sm font-bold mb-2">Password</label>
+          <input 
+            v-model="password"
+            type="password" 
+            class="w-full bg-gray-900 text-white px-4 py-3 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
+            placeholder="••••••••" 
+            required 
+          />
         </div>
-        
-        <button type="submit" 
-                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+
+        <div v-if="errorMessage" class="text-red-400 text-sm font-semibold bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-center">
+          {{ errorMessage }}
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg">
           Masuk
         </button>
       </form>
     </div>
-
   </div>
 </template>
 
@@ -34,18 +44,23 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const username = ref('')
-const password = ref('')
 const router = useRouter()
 
-const prosesLogin = () => {
-  if (username.value === 'admin' && password.value === '1234') {
-    router.push('/data') 
-  } else if (username.value === 'operator' && password.value === '1234') {
-    router.push('/operator')
+const username = ref('')
+const password = ref('')
+const errorMessage = ref('')
+
+const handleLogin = () => {
+  if (username.value === 'admin' && password.value === 'admin') {
+    errorMessage.value = ''
+    
+    // Simpan status login ke localStorage
+    localStorage.setItem('isLoggedIn', 'true')
+    
+    // Arahkan ke Dashboard
+    router.push('/')
   } else {
-    alert('Username atau Password salah! ')
+    errorMessage.value = 'Username atau Password salah!'
   }
 }
 </script>
-
