@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto pl-8">
+  <div class="max-w-7xl mx-auto">
     <div class="flex items-center space-x-4 mb-8">
       <router-link to="/" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-white">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>

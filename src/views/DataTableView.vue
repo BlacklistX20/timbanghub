@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto pl-8 pb-10">
+  <div class="max-w-7xl mx-auto pb-10">
     <div class="flex flex-col mb-8">
       <h1 class="text-3xl font-bold text-white mb-6">Data Keseluruhan Timbangan</h1>
       
