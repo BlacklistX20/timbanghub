@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto pb-10">
+  <div class="max-w-7xl mx-auto pl-8 pb-10 pr-8 md:pr-0">
     <div class="flex flex-col mb-8">
       <h1 class="text-3xl font-bold text-white mb-6">Data Keseluruhan Timbangan</h1>
       
@@ -11,15 +11,12 @@
           <input 
             v-model="searchQuery" 
             type="text" 
-            class="w-full bg-gray-900 text-white pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
+            class="w-full bg-gray-900 text-white pl-10 pr-4 py-2.5 rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500 transition-colors" 
             placeholder="Cari tanggal atau waktu..." 
           />
         </div>
 
-        <button 
-          @click="isModalOpen = true" 
-          class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center justify-center transition-colors shadow-lg"
-        >
+        <button @click="isModalOpen = true" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-lg flex items-center justify-center transition-colors shadow-lg">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
           Download Data
         </button>
@@ -27,38 +24,44 @@
     </div>
 
     <div class="bg-gray-800 rounded-t-2xl shadow-lg border border-gray-700 overflow-x-auto">
-      <table class="w-full text-left border-collapse">
+      <table class="w-full text-left border-collapse min-w-[1000px]">
         <thead>
-          <tr class="bg-gray-900 text-gray-300 text-sm uppercase tracking-wider">
-            <th rowspan="2" class="p-4 border-b border-r border-gray-700 w-16 text-center">No</th>
-            <th rowspan="2" class="p-4 border-b border-r border-gray-700">Tanggal & Waktu</th>
-            <th colspan="2" class="p-3 border-b border-r border-gray-700 text-center bg-blue-900/30">Group 1</th>
-            <th colspan="2" class="p-3 border-b border-r border-gray-700 text-center bg-orange-900/30">Group 2</th>
-            <th rowspan="2" class="p-4 border-b border-gray-700 text-center w-24">Aksi</th>
+          <tr class="bg-gray-900 text-gray-300 text-sm uppercase tracking-wider text-center">
+            <th rowspan="2" class="p-4 border-b border-r border-gray-700 w-16">No</th>
+            <th colspan="2" class="p-3 border-b border-r border-gray-700 bg-blue-900/30 text-blue-200">Timbangan 1</th>
+            <th colspan="2" class="p-3 border-b border-r border-gray-700 bg-emerald-900/30 text-emerald-200">Timbangan 2</th>
+            <th colspan="2" class="p-3 border-b border-r border-gray-700 bg-orange-900/30 text-orange-200">Timbangan 3</th>
+            <th colspan="2" class="p-3 border-b border-gray-700 bg-purple-900/30 text-purple-200">Timbangan 4</th>
           </tr>
-          <tr class="bg-gray-800 text-gray-400 text-xs uppercase tracking-wider">
-            <th class="p-3 border-b border-r border-gray-700 text-center">Tmbgn 1 (Kg)</th>
-            <th class="p-3 border-b border-r border-gray-700 text-center">Tmbgn 2 (Kg)</th>
-            <th class="p-3 border-b border-r border-gray-700 text-center">Tmbgn 3 (Kg)</th>
-            <th class="p-3 border-b border-r border-gray-700 text-center">Tmbgn 4 (Kg)</th>
+          <tr class="bg-gray-800 text-gray-400 text-xs uppercase tracking-wider text-center">
+            <th class="p-3 border-b border-r border-gray-700">Waktu</th>
+            <th class="p-3 border-b border-r border-gray-700">Berat (Kg)</th>
+            <th class="p-3 border-b border-r border-gray-700">Waktu</th>
+            <th class="p-3 border-b border-r border-gray-700">Berat (Kg)</th>
+            <th class="p-3 border-b border-r border-gray-700">Waktu</th>
+            <th class="p-3 border-b border-r border-gray-700">Berat (Kg)</th>
+            <th class="p-3 border-b border-r border-gray-700">Waktu</th>
+            <th class="p-3 border-b border-gray-700">Berat (Kg)</th>
           </tr>
         </thead>
         <tbody class="text-gray-300 text-sm">
           <tr v-for="(item, index) in paginatedData" :key="item.id" class="hover:bg-gray-700/50 transition-colors">
-            <td class="p-4 border-b border-gray-700 text-center">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
-            <td class="p-4 border-b border-gray-700 font-mono">{{ item.datetime }}</td>
-            <td class="p-4 border-b border-gray-700 text-center text-blue-300">{{ item.t1.toFixed(2) }}</td>
-            <td class="p-4 border-b border-gray-700 text-center text-blue-300">{{ item.t2.toFixed(2) }}</td>
-            <td class="p-4 border-b border-gray-700 text-center text-orange-300">{{ item.t3.toFixed(2) }}</td>
-            <td class="p-4 border-b border-gray-700 text-center text-orange-300">{{ item.t4.toFixed(2) }}</td>
-            <td class="p-4 border-b border-gray-700 text-center">
-              <button @click="deleteRow(item.id)" class="text-red-400 hover:text-red-300 hover:bg-red-500/20 p-2 rounded transition-colors" title="Hapus Data">
-                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-              </button>
-            </td>
+            <td class="p-4 border-b border-r border-gray-700 text-center">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+            
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t1.dt }}</td>
+            <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-blue-300">{{ item.t1.w > 0 ? item.t1.w.toFixed(2) : '-' }}</td>
+            
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t2.dt }}</td>
+            <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-emerald-300">{{ item.t2.w > 0 ? item.t2.w.toFixed(2) : '-' }}</td>
+            
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t3.dt }}</td>
+            <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-orange-300">{{ item.t3.w > 0 ? item.t3.w.toFixed(2) : '-' }}</td>
+            
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t4.dt }}</td>
+            <td class="p-3 border-b border-gray-700 text-center font-bold text-purple-300">{{ item.t4.w > 0 ? item.t4.w.toFixed(2) : '-' }}</td>
           </tr>
           <tr v-if="paginatedData.length === 0">
-            <td colspan="7" class="p-8 text-center text-gray-500">
+            <td colspan="9" class="p-8 text-center text-gray-500">
               Tidak ada data yang cocok dengan pencarian "{{ searchQuery }}".
             </td>
           </tr>
@@ -68,39 +71,14 @@
 
     <div class="bg-gray-900 border border-t-0 border-gray-700 rounded-b-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
       <div class="text-sm text-gray-400">
-        Menampilkan <span class="font-bold text-white">{{ startIndex + 1 }}</span> sampai <span class="font-bold text-white">{{ endIndex }}</span> dari <span class="font-bold text-white">{{ filteredData.length }}</span> entri
+        Menampilkan <span class="font-bold text-white">{{ filteredData.length > 0 ? startIndex + 1 : 0 }}</span> 
+        sampai <span class="font-bold text-white">{{ endIndex }}</span> dari <span class="font-bold text-white">{{ filteredData.length }}</span> entri
       </div>
       
       <div class="flex items-center space-x-1">
-        <button 
-          @click="prevPage" 
-          :disabled="currentPage === 1"
-          class="px-3 py-1 rounded border border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Kembali
-        </button>
-        
-        <button 
-          v-for="page in totalPages" 
-          :key="page" 
-          @click="goToPage(page)"
-          :class="[
-            'px-3 py-1 rounded border text-sm transition-colors',
-            currentPage === page 
-              ? 'bg-blue-600 border-blue-600 text-white font-bold' 
-              : 'border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white'
-          ]"
-        >
-          {{ page }}
-        </button>
-        
-        <button 
-          @click="nextPage" 
-          :disabled="currentPage === totalPages || totalPages === 0"
-          class="px-3 py-1 rounded border border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Lanjut
-        </button>
+        <button @click="prevPage" :disabled="currentPage === 1" class="px-3 py-1 rounded border border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Kembali</button>
+        <button v-for="page in totalPages" :key="page" @click="goToPage(page)" :class="['px-3 py-1 rounded border text-sm transition-colors', currentPage === page ? 'bg-blue-600 border-blue-600 text-white font-bold' : 'border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white']">{{ page }}</button>
+        <button @click="nextPage" :disabled="currentPage === totalPages || totalPages === 0" class="px-3 py-1 rounded border border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Lanjut</button>
       </div>
     </div>
 
@@ -126,106 +104,76 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
 
-// -- STATE UNTUK MODAL DOWNLOAD --
 const isModalOpen = ref(false)
 const startDate = ref('')
 const endDate = ref('')
 
-// -- GENERATE DUMMY DATA DALAM JUMLAH BANYAK --
-// Saya membuat 45 baris data agar Anda bisa melihat fitur halamannya berfungsi
+// Generate Dummy Data dengan Waktu Independen
 const generateDummyData = () => {
   const data = []
   for (let i = 1; i <= 45; i++) {
-    const day = (19 - (i % 5)).toString().padStart(2, '0') // Simulasi hari berbeda
-    const hour = (8 + (i % 10)).toString().padStart(2, '0') // Simulasi jam berbeda
-    const minute = (15 + i).toString().padStart(2, '0')
-    
+    // Timbangan beroperasi di waktu dan menit yang acak dan berbeda-beda
+    const dt1 = `24/06/2026 08:${(i + 5).toString().padStart(2, '0')}:15`
+    const dt2 = `24/06/2026 08:${(i + 7).toString().padStart(2, '0')}:30`
+    const dt4 = `24/06/2026 08:${(i + 1).toString().padStart(2, '0')}:45`
+
     data.push({
       id: i,
-      datetime: `${day}/06/2026 ${hour}:${minute}:00`,
-      t1: 100 + (Math.random() * 50),
-      t2: 110 + (Math.random() * 50),
-      t3: 0.00, // Misal Timbangan 3 masih berhenti
-      t4: 120 + (Math.random() * 50),
+      t1: { dt: dt1, w: 65 + (Math.random() * 5) },
+      t2: { dt: dt2, w: 66 + (Math.random() * 5) },
+      t3: { dt: '-', w: 0 }, // Simulasi timbangan mati / tidak ada data
+      t4: { dt: dt4, w: 67 + (Math.random() * 5) },
     })
   }
   return data
 }
+
 const tableData = ref(generateDummyData())
 
-// -- LOGIKA SEARCH & PAGINATION --
 const searchQuery = ref('')
 const currentPage = ref(1)
-const itemsPerPage = ref(10) // Menampilkan 10 data per halaman
+const itemsPerPage = ref(10)
 
-// 1. Filter Data berdasarkan Search
+// Filter pencarian kini mencari kecocokan waktu di semua timbangan
 const filteredData = computed(() => {
   if (!searchQuery.value) return tableData.value
-  
   const query = searchQuery.value.toLowerCase()
   return tableData.value.filter(item => 
-    item.datetime.toLowerCase().includes(query)
+    item.t1.dt.toLowerCase().includes(query) ||
+    item.t2.dt.toLowerCase().includes(query) ||
+    item.t3.dt.toLowerCase().includes(query) ||
+    item.t4.dt.toLowerCase().includes(query)
   )
 })
 
-// Jika user mengetik di kotak pencarian, kembalikan halaman ke nomor 1
 watch(searchQuery, () => {
   currentPage.value = 1
 })
 
-// 2. Hitung Paginasi
-const totalPages = computed(() => {
-  return Math.ceil(filteredData.value.length / itemsPerPage.value)
-})
-
+const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage.value))
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage.value)
 const endIndex = computed(() => {
   const end = startIndex.value + itemsPerPage.value
   return end > filteredData.value.length ? filteredData.value.length : end
 })
+const paginatedData = computed(() => filteredData.value.slice(startIndex.value, startIndex.value + itemsPerPage.value))
 
-// 3. Potong Data Sesuai Halaman Aktif
-const paginatedData = computed(() => {
-  return filteredData.value.slice(startIndex.value, startIndex.value + itemsPerPage.value)
-})
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const goToPage = (page) => { currentPage.value = page }
 
-// -- FUNGSI TOMBOL PAGINASI --
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
-const prevPage = () => {
-  if (currentPage.value > 1) currentPage.value--
-}
-const goToPage = (page) => {
-  currentPage.value = page
-}
-
-// -- FUNGSI HAPUS BARIS --
-const deleteRow = (id) => {
-  const confirmDelete = confirm('Apakah Anda yakin ingin menghapus data ini?')
-  if (confirmDelete) {
-    tableData.value = tableData.value.filter(item => item.id !== id)
-    // Cegah error jika baris terakhir di halaman terhapus
-    if (currentPage.value > totalPages.value && totalPages.value > 0) {
-      currentPage.value = totalPages.value
-    }
-  }
-}
-
-// -- FUNGSI DOWNLOAD --
 const handleDownload = () => {
   if (!startDate.value || !endDate.value) {
     alert('Harap pilih Tanggal Mulai dan Tanggal Akhir!')
     return
   }
-  alert(`Memulai download data dari ${startDate.value} sampai ${endDate.value}... (Simulasi API)`)
+  alert(`Memulai download data...`)
   isModalOpen.value = false
 }
 </script>
