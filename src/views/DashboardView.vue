@@ -55,17 +55,48 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
+// Siapkan state default dengan nilai 0 dan stopped
 const scales = ref([
-  { id: 1, status: 'running', realtimeWeight: 1045.50 },
-  { id: 2, status: 'running', realtimeWeight: 890.20 },
-  { id: 3, status: 'stopped', realtimeWeight: 0.00 },
-  { id: 4, status: 'running', realtimeWeight: 1205.80 },
+  { id: 1, status: 'stopped', realtimeWeight: 0 },
+  { id: 2, status: 'stopped', realtimeWeight: 0 },
+  { id: 3, status: 'stopped', realtimeWeight: 0 },
+  { id: 4, status: 'stopped', realtimeWeight: 0 },
 ])
 
-const totalWeight = ref(245900)
-const totalSacks = ref(4918) // Dummy data total karung
-const dailySacks = ref(245)  // Dummy data karung hari ini
+const totalWeight = ref(0)
+const totalSacks = ref(0)
+const dailySacks = ref(0)
+
 const activeScales = computed(() => scales.value.filter(s => s.status === 'running').length)
+
+// Fungsi untuk menarik data dari Backend
+onMounted(async () => {
+  try {
+    // 1. Ambil Ringkasan Total (Karung & Berat)
+    const summaryRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/dashboard-summary`)
+    const summaryData = await summaryRes.json()
+    
+    totalWeight.value = summaryData.totalWeight
+    totalSacks.value = summaryData.totalSacks
+    dailySacks.value = summaryData.dailySacks
+
+    // 2. Ambil data Realtime masing-masing timbangan secara paralel
+    const scalePromises = [1, 2, 3, 4].map(id => 
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/detail/${id}`).then(res => res.json())
+    )
+    const detailsData = await Promise.all(scalePromises)
+
+    // 3. Masukkan data ke array scales agar tampil di layar
+    scales.value = detailsData.map((data, index) => ({
+      id: index + 1,
+      status: data.status,
+      realtimeWeight: data.realtime
+    }))
+
+  } catch (error) {
+    console.error('Gagal memuat data Dashboard:', error)
+  }
+})
 </script>

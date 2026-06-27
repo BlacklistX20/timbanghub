@@ -62,7 +62,7 @@
           </tr>
           <tr v-if="paginatedData.length === 0">
             <td colspan="9" class="p-8 text-center text-gray-500">
-              Tidak ada data yang cocok dengan pencarian "{{ searchQuery }}".
+              Tidak ada data yang cocok.
             </td>
           </tr>
         </tbody>
@@ -85,9 +85,9 @@
     <div v-if="isModalOpen" class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm">
       <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-md">
         <h2 class="text-xl font-bold text-white mb-4">Download Data Timbangan</h2>
-        <p class="text-sm text-gray-400 mb-6">Pilih rentang tanggal untuk data yang ingin diunduh.</p>
+        <p class="text-sm text-gray-400 mb-6">Pilih rentang tanggal dan format file untuk diunduh.</p>
         
-        <div class="space-y-4 mb-8">
+        <div class="space-y-4 mb-6">
           <div>
             <label class="block text-gray-300 text-sm font-semibold mb-2">Tanggal Mulai</label>
             <input type="date" v-model="startDate" class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 [color-scheme:dark]" />
@@ -98,9 +98,26 @@
           </div>
         </div>
 
+        <div class="mb-8">
+          <label class="block text-gray-300 text-sm font-semibold mb-3">Format File</label>
+          <div class="flex items-center space-x-6">
+            <label class="flex items-center space-x-2 cursor-pointer group">
+              <input type="radio" v-model="exportFormat" value="excel" class="w-4 h-4 text-green-600 bg-gray-900 border-gray-600 focus:ring-green-600 focus:ring-2">
+              <span class="text-gray-300 group-hover:text-white transition-colors">Excel (.xlsx)</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer group">
+              <input type="radio" v-model="exportFormat" value="pdf" class="w-4 h-4 text-red-600 bg-gray-900 border-gray-600 focus:ring-red-600 focus:ring-2">
+              <span class="text-gray-300 group-hover:text-white transition-colors">PDF (.pdf)</span>
+            </label>
+          </div>
+        </div>
+
         <div class="flex justify-end space-x-3">
           <button @click="isModalOpen = false" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">Batal</button>
-          <button @click="handleDownload" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">Proses Download</button>
+          <button @click="handleDownload" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center">
+            <svg v-if="isDownloading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            {{ isDownloading ? 'Memproses...' : 'Download Sekarang' }}
+          </button>
         </div>
       </div>
     </div>
@@ -108,39 +125,32 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable' // Ubah baris ini
 
 const isModalOpen = ref(false)
+const isDownloading = ref(false)
 const startDate = ref('')
 const endDate = ref('')
+const exportFormat = ref('excel') // Default terpilih
 
-// Generate Dummy Data dengan Waktu Independen
-const generateDummyData = () => {
-  const data = []
-  for (let i = 1; i <= 45; i++) {
-    // Timbangan beroperasi di waktu dan menit yang acak dan berbeda-beda
-    const dt1 = `24/06/2026 08:${(i + 5).toString().padStart(2, '0')}:15`
-    const dt2 = `24/06/2026 08:${(i + 7).toString().padStart(2, '0')}:30`
-    const dt4 = `24/06/2026 08:${(i + 1).toString().padStart(2, '0')}:45`
-
-    data.push({
-      id: i,
-      t1: { dt: dt1, w: 65 + (Math.random() * 5) },
-      t2: { dt: dt2, w: 66 + (Math.random() * 5) },
-      t3: { dt: '-', w: 0 }, // Simulasi timbangan mati / tidak ada data
-      t4: { dt: dt4, w: 67 + (Math.random() * 5) },
-    })
-  }
-  return data
-}
-
-const tableData = ref(generateDummyData())
-
+const tableData = ref([])
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
-// Filter pencarian kini mencari kecocokan waktu di semua timbangan
+onMounted(async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/semua-data`)
+    const data = await res.json()
+    tableData.value = data
+  } catch (error) {
+    console.error('Gagal memuat data Tabel:', error)
+  }
+})
+
 const filteredData = computed(() => {
   if (!searchQuery.value) return tableData.value
   const query = searchQuery.value.toLowerCase()
@@ -152,9 +162,7 @@ const filteredData = computed(() => {
   )
 })
 
-watch(searchQuery, () => {
-  currentPage.value = 1
-})
+watch(searchQuery, () => { currentPage.value = 1 })
 
 const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage.value))
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage.value)
@@ -168,12 +176,131 @@ const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.v
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const goToPage = (page) => { currentPage.value = page }
 
+// FUNGSI KONVERSI TANGGAL DARI STRING KE TIMESTAMP (Untuk logika filter rentang tanggal)
+const parseDateString = (dtStr) => {
+  if (!dtStr || dtStr === '-') return null
+  const [datePart, timePart] = dtStr.split(' ')
+  if (!datePart) return null
+  const [day, month, year] = datePart.split('/')
+  return new Date(`${year}-${month}-${day}T${timePart || '00:00:00'}`).getTime()
+}
+
+// FUNGSI UTAMA DOWNLOAD
 const handleDownload = () => {
   if (!startDate.value || !endDate.value) {
-    alert('Harap pilih Tanggal Mulai dan Tanggal Akhir!')
+    alert('Harap pilih Tanggal Mulai dan Tanggal Akhir secara lengkap!')
     return
   }
-  alert(`Memulai download data...`)
-  isModalOpen.value = false
+
+  isDownloading.value = true
+
+  setTimeout(() => {
+    try {
+      // 1. Filter Data Berdasarkan Rentang Tanggal
+      const startT = new Date(`${startDate.value}T00:00:00`).getTime()
+      const endT = new Date(`${endDate.value}T23:59:59`).getTime()
+
+      const dataToExport = tableData.value.filter(item => {
+        const dates = [
+          parseDateString(item.t1.dt), parseDateString(item.t2.dt),
+          parseDateString(item.t3.dt), parseDateString(item.t4.dt)
+        ].filter(d => d !== null)
+
+        if (dates.length === 0) return false
+
+        const minDate = Math.min(...dates)
+        const maxDate = Math.max(...dates)
+
+        return maxDate >= startT && minDate <= endT
+      })
+
+      if (dataToExport.length === 0) {
+        alert('Tidak ada data timbangan pada rentang tanggal yang dipilih.')
+        isDownloading.value = false
+        return
+      }
+
+      // 2. Eksekusi Export
+      if (exportFormat.value === 'excel') {
+        exportToExcel(dataToExport)
+      } else {
+        exportToPDF(dataToExport)
+      }
+
+      // 3. TAMBAHAN: Fungsi Reset Tanggal Setelah Berhasil Download
+      startDate.value = ''
+      endDate.value = ''
+
+    } catch (error) {
+      console.error("Terjadi kesalahan saat memproses file:", error)
+      alert("Gagal membuat dokumen, silakan coba lagi.")
+    } finally {
+      // Baris ini memastikan efek loading SELALU mati walau terjadi error
+      isDownloading.value = false
+      isModalOpen.value = false
+    }
+  }, 500)
+}
+
+// FUNGSI EXPORT KE EXCEL
+const exportToExcel = (data) => {
+  const formattedData = data.map((item, idx) => ({
+    'No': idx + 1,
+    'Waktu T1': item.t1.dt,
+    'Berat T1 (Kg)': item.t1.w > 0 ? item.t1.w : '-',
+    'Waktu T2': item.t2.dt,
+    'Berat T2 (Kg)': item.t2.w > 0 ? item.t2.w : '-',
+    'Waktu T3': item.t3.dt,
+    'Berat T3 (Kg)': item.t3.w > 0 ? item.t3.w : '-',
+    'Waktu T4': item.t4.dt,
+    'Berat T4 (Kg)': item.t4.w > 0 ? item.t4.w : '-'
+  }))
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedData)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data Timbangan")
+  XLSX.writeFile(workbook, `Laporan_TimbangHub_${startDate.value}_sd_${endDate.value}.xlsx`)
+}
+
+// FUNGSI EXPORT KE PDF
+const exportToPDF = (data) => {
+  const doc = new jsPDF('landscape', 'pt', 'a4')
+  
+  doc.setFontSize(16)
+  doc.text("Laporan Data Timbangan Gudang (TimbangHub)", 40, 40)
+  doc.setFontSize(10)
+  doc.text(`Periode: ${startDate.value} sampai ${endDate.value}`, 40, 60)
+
+  const tableColumn = [
+    [
+      { content: 'No', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
+      { content: 'Timbangan 1', colSpan: 2, styles: { halign: 'center' } },
+      { content: 'Timbangan 2', colSpan: 2, styles: { halign: 'center' } },
+      { content: 'Timbangan 3', colSpan: 2, styles: { halign: 'center' } },
+      { content: 'Timbangan 4', colSpan: 2, styles: { halign: 'center' } }
+    ],
+    [
+      'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)'
+    ]
+  ]
+
+  const tableRows = data.map((item, idx) => [
+    idx + 1,
+    item.t1.dt, item.t1.w > 0 ? item.t1.w.toFixed(2) : '-',
+    item.t2.dt, item.t2.w > 0 ? item.t2.w.toFixed(2) : '-',
+    item.t3.dt, item.t3.w > 0 ? item.t3.w.toFixed(2) : '-',
+    item.t4.dt, item.t4.w > 0 ? item.t4.w.toFixed(2) : '-'
+  ])
+
+  autoTable(doc, {
+    head: tableColumn,
+    body: tableRows,
+    startY: 80,
+    theme: 'grid',
+    headStyles: { fillColor: [31, 41, 55], textColor: 255 },
+    styles: { fontSize: 8, cellPadding: 4, halign: 'center' },
+  })
+
+  doc.save(`Laporan_TimbangHub_${startDate.value}_sd_${endDate.value}.pdf`)
 }
 </script>

@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS, Title, Tooltip, Legend, LineElement, LinearScale, PointElement, CategoryScale, Filler
@@ -78,17 +78,18 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, PointElement,
 
 const props = defineProps(['id'])
 
-// Data Dummy Ditambahkan totalSacks dan dailySacks
+// State Default
 const scaleData = ref({
-  status: 'running',
-  realtime: 1250.5,
-  totalKg: 45020,
-  totalSacks: 900,
-  dailySacks: 45
+  status: 'stopped',
+  realtime: 0,
+  totalKg: 0,
+  totalSacks: 0,
+  dailySacks: 0
 })
 
+// Template Grafik Default
 const chartData = ref({
-  labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+  labels: [],
   datasets: [{
     label: 'Berat Timbangan (Kg)',
     backgroundColor: 'rgba(37, 99, 235, 0.2)',
@@ -97,7 +98,7 @@ const chartData = ref({
     pointBorderColor: '#fff',
     fill: true,
     tension: 0.4,
-    data: [400, 800, 600, 1200, 1000, 1400, 900, 1100, 1300]
+    data: []
   }]
 })
 
@@ -111,10 +112,37 @@ const chartOptions = {
   }
 }
 
-onMounted(() => {
-  if (props.id === '3') {
-    scaleData.value.status = 'stopped'
-    scaleData.value.realtime = 0
+// Fungsi Tarik Data dari Backend
+const fetchDetailData = async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/detail/${props.id}`)
+    const data = await res.json()
+
+    // Update Informasi Text
+    scaleData.value = {
+      status: data.status,
+      realtime: data.realtime,
+      totalKg: data.totalKg,
+      totalSacks: data.totalSacks,
+      dailySacks: data.dailySacks
+    }
+
+    // Update Data Grafik dengan menimpa nilai objek
+    chartData.value = {
+      labels: data.chart.labels,
+      datasets: [{
+        ...chartData.value.datasets[0], // Mempertahankan warna/styling
+        data: data.chart.data
+      }]
+    }
+  } catch (error) {
+    console.error(`Gagal memuat detail timbangan ${props.id}:`, error)
   }
-})
+}
+
+// Eksekusi saat pertama kali buka
+onMounted(fetchDetailData)
+
+// Eksekusi ulang jika user klik timbangan lain dari sidebar tanpa refresh
+watch(() => props.id, fetchDetailData)
 </script>
