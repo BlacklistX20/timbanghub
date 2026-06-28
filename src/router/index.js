@@ -35,19 +35,21 @@ const router = createRouter({
 })
 
 // Route Guard Logika
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true'
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     // Jika halaman butuh login dan user belum login, lempar ke halaman login
-    next({ name: 'login' })
-  } else if (to.name === 'login' && isAuthenticated) {
+    return { name: 'login' }
+  } 
+  
+  if (to.name === 'login' && isAuthenticated) {
     // Jika user sudah login tapi mencoba buka halaman login lagi, arahkan ke dashboard
-    next({ name: 'dashboard' })
-  } else {
-    // Izinkan akses jika memenuhi syarat
-    next()
+    return { name: 'dashboard' }
   }
+
+  // Izinkan akses jika memenuhi syarat
+  return true
 })
 
 export default router
