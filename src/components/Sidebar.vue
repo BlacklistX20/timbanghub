@@ -87,14 +87,14 @@ const username = ref('')
 const role = ref('')
 
 onMounted(() => {
-  // Mengambil nama dan role dari localStorage
-  username.value = localStorage.getItem('username') || 'Pengguna'
-  role.value = localStorage.getItem('role') || 'Operator'
+  // Mengambil nama dan role dari sessionStorage
+  username.value = sessionStorage.getItem('username') || 'Pengguna'
+  role.value = sessionStorage.getItem('role') || 'Operator'
 })
 
 const handleLogout = () => {
-  // Bersihkan semua sesi di localStorage
-  localStorage.clear()
+  // Bersihkan semua sesi di sessionStorage
+  sessionStorage.clear()
   // Tendang kembali ke halaman login
   router.push('/login')
 }

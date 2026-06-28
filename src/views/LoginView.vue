@@ -86,12 +86,12 @@ const handleLogin = async () => {
 
     if (response.ok) {
       // 1. Simpan tanda bahwa user sudah login (untuk Route Guard)
-      localStorage.setItem('isLoggedIn', 'true')
+      sessionStorage.setItem('isLoggedIn', 'true')
       
       // 2. Simpan Data Rahasia & Identitas (JWT Token, Role, Username)
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('role', data.role)
-      localStorage.setItem('username', data.username)
+      sessionStorage.setItem('token', data.token)
+      sessionStorage.setItem('role', data.role)
+      sessionStorage.setItem('username', data.username)
       
       // 3. Arahkan ke Dashboard
       router.push('/')

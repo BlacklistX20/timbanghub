@@ -36,7 +36,7 @@ const router = createRouter({
 
 // Route Guard Logika
 router.beforeEach((to, from) => {
-  const isAuthenticated = localStorage.getItem('isLoggedIn') === 'true'
+  const isAuthenticated = sessionStorage.getItem('isLoggedIn') === 'true'
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     // Jika halaman butuh login dan user belum login, lempar ke halaman login
