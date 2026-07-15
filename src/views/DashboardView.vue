@@ -34,14 +34,14 @@
         
         <div class="flex justify-between items-start mb-4">
           <h3 class="font-bold text-lg text-white">Timbangan {{ scale.id }}</h3>
-          <span :class="scale.status === 'running' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'" class="px-3 py-1 text-xs font-semibold rounded-full border">
+          <span :class="scale.status === 'running' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'" class="px-3 py-1 text-xs font-semibold rounded-full border transition-colors duration-300">
             {{ scale.status.toUpperCase() }}
           </span>
         </div>
 
         <div class="mt-4">
           <p class="text-gray-400 text-sm mb-1">Berat Saat Ini</p>
-          <div class="text-3xl font-mono font-bold" :class="scale.status === 'running' ? 'text-blue-400' : 'text-gray-500'">
+          <div class="text-3xl font-mono font-bold transition-all duration-300" :class="scale.status === 'running' ? 'text-blue-400' : 'text-gray-500'">
             {{ scale.realtimeWeight.toFixed(2) }} <span class="text-base text-gray-400">Kg</span>
           </div>
         </div>
@@ -55,9 +55,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-// Siapkan state default dengan nilai 0 dan stopped
 const scales = ref([
   { id: 1, status: 'stopped', realtimeWeight: 0 },
   { id: 2, status: 'stopped', realtimeWeight: 0 },
@@ -68,13 +67,14 @@ const scales = ref([
 const totalWeight = ref(0)
 const totalSacks = ref(0)
 const dailySacks = ref(0)
+let pollingInterval = null // Variabel untuk menyimpan ID interval
 
 const activeScales = computed(() => scales.value.filter(s => s.status === 'running').length)
 
-// Fungsi untuk menarik data dari Backend
-onMounted(async () => {
+// Pisahkan fungsi fetch agar bisa dipanggil berulang-ulang
+const fetchDashboardData = async () => {
   try {
-    // 1. Ambil Ringkasan Total (Karung & Berat)
+    // 1. Ambil Ringkasan Total
     const summaryRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/dashboard-summary`)
     const summaryData = await summaryRes.json()
     
@@ -82,13 +82,13 @@ onMounted(async () => {
     totalSacks.value = summaryData.totalSacks
     dailySacks.value = summaryData.dailySacks
 
-    // 2. Ambil data Realtime masing-masing timbangan secara paralel
+    // 2. Ambil data Realtime secara paralel
     const scalePromises = [1, 2, 3, 4].map(id => 
       fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/detail/${id}`).then(res => res.json())
     )
     const detailsData = await Promise.all(scalePromises)
 
-    // 3. Masukkan data ke array scales agar tampil di layar
+    // 3. Update state array
     scales.value = detailsData.map((data, index) => ({
       id: index + 1,
       status: data.status,
@@ -97,6 +97,19 @@ onMounted(async () => {
 
   } catch (error) {
     console.error('Gagal memuat data Dashboard:', error)
+  }
+}
+
+// Jalankan fetch saat komponen dimuat, dan set interval setiap 5 detik
+onMounted(() => {
+  fetchDashboardData() // Panggilan pertama agar data langsung tampil
+  pollingInterval = setInterval(fetchDashboardData, 5000) // Panggilan otomatis setiap 5 detik
+})
+
+// HENTIKAN interval saat user pindah halaman agar tidak memberatkan browser / bocor memori
+onUnmounted(() => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
   }
 })
 </script>

@@ -125,23 +125,25 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue' // Tambahkan onUnmounted
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable' // Ubah baris ini
+import autoTable from 'jspdf-autotable'
 
 const isModalOpen = ref(false)
 const isDownloading = ref(false)
 const startDate = ref('')
 const endDate = ref('')
-const exportFormat = ref('excel') // Default terpilih
+const exportFormat = ref('excel') 
 
 const tableData = ref([])
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
+let pollingInterval = null // Variabel untuk menyimpan Interval ID
 
-onMounted(async () => {
+// 1. PISAHKAN LOGIKA FETCH AGAR BISA DIPANGGIL BERULANG
+const fetchTableData = async () => {
   try {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/semua-data`)
     const data = await res.json()
@@ -149,6 +151,17 @@ onMounted(async () => {
   } catch (error) {
     console.error('Gagal memuat data Tabel:', error)
   }
+}
+
+// 2. JALANKAN SAAT DIMUAT & SET INTERVAL POLLING
+onMounted(() => {
+  fetchTableData() // Tarik data pertama kali
+  pollingInterval = setInterval(fetchTableData, 5000) // Update otomatis setiap 5 detik
+})
+
+// 3. BERSIHKAN MEMORI SAAT PINDAH HALAMAN
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval)
 })
 
 const filteredData = computed(() => {
@@ -176,7 +189,7 @@ const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.v
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const goToPage = (page) => { currentPage.value = page }
 
-// FUNGSI KONVERSI TANGGAL DARI STRING KE TIMESTAMP (Untuk logika filter rentang tanggal)
+// FUNGSI KONVERSI TANGGAL DARI STRING KE TIMESTAMP
 const parseDateString = (dtStr) => {
   if (!dtStr || dtStr === '-') return null
   const [datePart, timePart] = dtStr.split(' ')
@@ -196,7 +209,6 @@ const handleDownload = () => {
 
   setTimeout(() => {
     try {
-      // 1. Filter Data Berdasarkan Rentang Tanggal
       const startT = new Date(`${startDate.value}T00:00:00`).getTime()
       const endT = new Date(`${endDate.value}T23:59:59`).getTime()
 
@@ -220,14 +232,12 @@ const handleDownload = () => {
         return
       }
 
-      // 2. Eksekusi Export
       if (exportFormat.value === 'excel') {
         exportToExcel(dataToExport)
       } else {
         exportToPDF(dataToExport)
       }
 
-      // 3. TAMBAHAN: Fungsi Reset Tanggal Setelah Berhasil Download
       startDate.value = ''
       endDate.value = ''
 
@@ -235,7 +245,6 @@ const handleDownload = () => {
       console.error("Terjadi kesalahan saat memproses file:", error)
       alert("Gagal membuat dokumen, silakan coba lagi.")
     } finally {
-      // Baris ini memastikan efek loading SELALU mati walau terjadi error
       isDownloading.value = false
       isModalOpen.value = false
     }

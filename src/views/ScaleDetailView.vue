@@ -11,14 +11,14 @@
       <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
         <h2 class="text-gray-400 text-sm font-semibold mb-1">Status Mesin</h2>
         <div class="flex items-center space-x-3 mt-2">
-          <div :class="scaleData.status === 'running' ? 'bg-green-500' : 'bg-red-500'" class="w-4 h-4 rounded-full animate-pulse"></div>
+          <div :class="scaleData.status === 'running' ? 'bg-green-500' : 'bg-red-500'" class="w-4 h-4 rounded-full animate-pulse transition-colors duration-300"></div>
           <span class="text-2xl font-bold text-white capitalize">{{ scaleData.status }}</span>
         </div>
       </div>
       
       <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
         <h2 class="text-gray-400 text-sm font-semibold mb-1">Berat Real-time</h2>
-        <div class="text-3xl font-mono font-bold text-blue-400 mt-2">
+        <div class="text-3xl font-mono font-bold text-blue-400 mt-2 transition-all duration-300">
           {{ scaleData.realtime.toFixed(2) }} <span class="text-lg text-gray-500">Kg</span>
         </div>
       </div>
@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue' // Tambahkan onUnmounted
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS, Title, Tooltip, Legend, LineElement, LinearScale, PointElement, CategoryScale, Filler
@@ -77,6 +77,7 @@ import {
 ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, PointElement, CategoryScale, Filler)
 
 const props = defineProps(['id'])
+let pollingInterval = null // Variabel untuk menyimpan ID Interval
 
 // State Default
 const scaleData = ref({
@@ -109,6 +110,9 @@ const chartOptions = {
   scales: {
     y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' } },
     x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+  },
+  animation: {
+    duration: 500 // Memperhalus animasi update grafik
   }
 }
 
@@ -127,11 +131,11 @@ const fetchDetailData = async () => {
       dailySacks: data.dailySacks
     }
 
-    // Update Data Grafik dengan menimpa nilai objek
+    // Update Data Grafik
     chartData.value = {
       labels: data.chart.labels,
       datasets: [{
-        ...chartData.value.datasets[0], // Mempertahankan warna/styling
+        ...chartData.value.datasets[0],
         data: data.chart.data
       }]
     }
@@ -140,9 +144,22 @@ const fetchDetailData = async () => {
   }
 }
 
-// Eksekusi saat pertama kali buka
-onMounted(fetchDetailData)
+// EKSEKUSI SIKLUS (LIFECYCLE)
+onMounted(() => {
+  fetchDetailData() // Tarik data saat halaman dibuka
+  pollingInterval = setInterval(fetchDetailData, 5000) // Polling tiap 5 detik
+})
 
-// Eksekusi ulang jika user klik timbangan lain dari sidebar tanpa refresh
-watch(() => props.id, fetchDetailData)
+onUnmounted(() => {
+  if (pollingInterval) clearInterval(pollingInterval) // Hapus interval saat pindah halaman
+})
+
+// Eksekusi ulang & RESET Interval jika user klik timbangan lain dari sidebar tanpa refresh
+watch(() => props.id, () => {
+  fetchDetailData() // Langsung tarik data untuk ID baru
+  
+  // Reset timer interval agar pembacaannya tepat kembali dihitung dari detik ke-0
+  if (pollingInterval) clearInterval(pollingInterval)
+  pollingInterval = setInterval(fetchDetailData, 5000)
+})
 </script>
