@@ -18,16 +18,36 @@
             :disabled="isLoading"
           />
         </div>
+        
+        <!-- KOLOM PASSWORD YANG DIPERBARUI -->
         <div>
           <label class="block text-gray-300 text-sm font-bold mb-2">Password</label>
-          <input 
-            v-model="password"
-            type="password" 
-            class="w-full bg-gray-900 text-white px-4 py-3 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
-            placeholder="••••••••" 
-            required 
-            :disabled="isLoading"
-          />
+          <div class="relative">
+            <input 
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'" 
+              class="w-full bg-gray-900 text-white pl-4 pr-12 py-3 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
+              placeholder="••••••••" 
+              required 
+              :disabled="isLoading"
+            />
+            <!-- TOMBOL MATA -->
+            <button 
+              type="button" 
+              @click="showPassword = !showPassword" 
+              class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-blue-400 focus:outline-none transition-colors"
+            >
+              <!-- Ikon Mata Tertutup (Tampilkan Password) -->
+              <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m0 0a10.05 10.05 0 015.71-1.583c4.478 0 8.268 2.943 9.543 7a9.97 9.97 0 01-1.564 3.029m-5.858-.908a3 3 0 00-4.243-4.243m4.243 4.243L8 8" />
+              </svg>
+              <!-- Ikon Mata Terbuka (Sembunyikan Password) -->
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div v-if="errorMessage" class="text-red-400 text-sm font-semibold bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-center transition-all">
@@ -63,10 +83,10 @@ const router = useRouter()
 const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
-const isLoading = ref(false) // State untuk memantau proses fetch
+const isLoading = ref(false) 
+const showPassword = ref(false) // State baru untuk toggle password
 
 const handleLogin = async () => {
-  // Reset pesan error dan nyalakan efek loading
   errorMessage.value = ''
   isLoading.value = true
 
@@ -85,26 +105,19 @@ const handleLogin = async () => {
     const data = await response.json()
 
     if (response.ok) {
-      // 1. Simpan tanda bahwa user sudah login (untuk Route Guard)
       sessionStorage.setItem('isLoggedIn', 'true')
-      
-      // 2. Simpan Data Rahasia & Identitas (JWT Token, Role, Username)
       sessionStorage.setItem('token', data.token)
       sessionStorage.setItem('role', data.role)
       sessionStorage.setItem('username', data.username)
-      
-      // 3. Arahkan ke Dashboard
+
       router.push('/')
     } else {
-      // Jika salah, tangkap pesan error yang dikirim oleh Express.js Backend
       errorMessage.value = data.message || 'Username atau password salah!'
     }
   } catch (error) {
     console.error('Error saat login:', error)
-    // Error ini muncul jika backend belum dinyalakan atau internet terputus
     errorMessage.value = 'Tidak dapat terhubung ke server. Pastikan backend aktif.'
   } finally {
-    // Matikan efek loading apa pun hasil akhirnya (sukses/gagal)
     isLoading.value = false
   }
 }
