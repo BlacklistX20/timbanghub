@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto pl-8 pb-10 pr-8 md:pr-0">
+  <div class="max-w-7xl mx-auto pl-4 pb-10 pr-4 md:pr-0">
     <div class="flex flex-col mb-8">
       <h1 class="text-3xl font-bold text-white mb-6">Data Keseluruhan Timbangan</h1>
       
@@ -24,44 +24,97 @@
     </div>
 
     <div class="bg-gray-800 rounded-t-2xl shadow-lg border border-gray-700 overflow-x-auto">
-      <table class="w-full text-left border-collapse min-w-[1000px]">
+      <table class="w-full text-left border-collapse min-w-[1200px]">
         <thead>
           <tr class="bg-gray-900 text-gray-300 text-sm uppercase tracking-wider text-center">
             <th rowspan="2" class="p-4 border-b border-r border-gray-700 w-16">No</th>
-            <th colspan="2" class="p-3 border-b border-r border-gray-700 bg-blue-900/30 text-blue-200">Timbangan 1</th>
-            <th colspan="2" class="p-3 border-b border-r border-gray-700 bg-emerald-900/30 text-emerald-200">Timbangan 2</th>
-            <th colspan="2" class="p-3 border-b border-r border-gray-700 bg-orange-900/30 text-orange-200">Timbangan 3</th>
-            <th colspan="2" class="p-3 border-b border-gray-700 bg-purple-900/30 text-purple-200">Timbangan 4</th>
+            <!-- Lebar Kolom (Colspan) Menyesuaikan Role -->
+            <th :colspan="hasActionAccess ? 3 : 2" class="p-3 border-b border-r border-gray-700 bg-blue-900/30 text-blue-200">Timbangan 1</th>
+            <th :colspan="hasActionAccess ? 3 : 2" class="p-3 border-b border-r border-gray-700 bg-emerald-900/30 text-emerald-200">Timbangan 2</th>
+            <th :colspan="hasActionAccess ? 3 : 2" class="p-3 border-b border-r border-gray-700 bg-orange-900/30 text-orange-200">Timbangan 3</th>
+            <th :colspan="hasActionAccess ? 3 : 2" class="p-3 border-b border-gray-700 bg-purple-900/30 text-purple-200">Timbangan 4</th>
           </tr>
           <tr class="bg-gray-800 text-gray-400 text-xs uppercase tracking-wider text-center">
+            <!-- Timbangan 1 -->
             <th class="p-3 border-b border-r border-gray-700">Waktu</th>
             <th class="p-3 border-b border-r border-gray-700">Berat (Kg)</th>
+            <th v-if="hasActionAccess" class="p-3 border-b border-r border-gray-700 w-20">Aksi</th>
+            <!-- Timbangan 2 -->
             <th class="p-3 border-b border-r border-gray-700">Waktu</th>
             <th class="p-3 border-b border-r border-gray-700">Berat (Kg)</th>
+            <th v-if="hasActionAccess" class="p-3 border-b border-r border-gray-700 w-20">Aksi</th>
+            <!-- Timbangan 3 -->
             <th class="p-3 border-b border-r border-gray-700">Waktu</th>
             <th class="p-3 border-b border-r border-gray-700">Berat (Kg)</th>
+            <th v-if="hasActionAccess" class="p-3 border-b border-r border-gray-700 w-20">Aksi</th>
+            <!-- Timbangan 4 -->
             <th class="p-3 border-b border-r border-gray-700">Waktu</th>
             <th class="p-3 border-b border-gray-700">Berat (Kg)</th>
+            <th v-if="hasActionAccess" class="p-3 border-b border-gray-700 w-20">Aksi</th>
           </tr>
         </thead>
         <tbody class="text-gray-300 text-sm">
           <tr v-for="(item, index) in paginatedData" :key="item.id" class="hover:bg-gray-700/50 transition-colors">
             <td class="p-4 border-b border-r border-gray-700 text-center">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
             
+            <!-- TIMBANGAN 1 -->
             <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t1.dt }}</td>
             <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-blue-300">{{ item.t1.w > 0 ? item.t1.w.toFixed(2) : '-' }}</td>
+            <td v-if="hasActionAccess" class="p-2 border-b border-r border-gray-700 text-center">
+              <div v-if="item.t1._id" class="flex items-center justify-center space-x-2">
+                <button @click="openEditModal(1, item.t1)" class="text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button @click="handleDelete(1, item.t1._id)" class="text-red-400 hover:text-red-300 transition-colors" title="Hapus">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </td>
             
+            <!-- TIMBANGAN 2 -->
             <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t2.dt }}</td>
             <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-emerald-300">{{ item.t2.w > 0 ? item.t2.w.toFixed(2) : '-' }}</td>
+            <td v-if="hasActionAccess" class="p-2 border-b border-r border-gray-700 text-center">
+              <div v-if="item.t2._id" class="flex items-center justify-center space-x-2">
+                <button @click="openEditModal(2, item.t2)" class="text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button @click="handleDelete(2, item.t2._id)" class="text-red-400 hover:text-red-300 transition-colors" title="Hapus">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </td>
             
+            <!-- TIMBANGAN 3 -->
             <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t3.dt }}</td>
             <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-orange-300">{{ item.t3.w > 0 ? item.t3.w.toFixed(2) : '-' }}</td>
+            <td v-if="hasActionAccess" class="p-2 border-b border-r border-gray-700 text-center">
+              <div v-if="item.t3._id" class="flex items-center justify-center space-x-2">
+                <button @click="openEditModal(3, item.t3)" class="text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button @click="handleDelete(3, item.t3._id)" class="text-red-400 hover:text-red-300 transition-colors" title="Hapus">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </td>
             
+            <!-- TIMBANGAN 4 -->
             <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t4.dt }}</td>
             <td class="p-3 border-b border-gray-700 text-center font-bold text-purple-300">{{ item.t4.w > 0 ? item.t4.w.toFixed(2) : '-' }}</td>
+            <td v-if="hasActionAccess" class="p-2 border-b border-gray-700 text-center">
+              <div v-if="item.t4._id" class="flex items-center justify-center space-x-2">
+                <button @click="openEditModal(4, item.t4)" class="text-blue-400 hover:text-blue-300 transition-colors" title="Edit">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button @click="handleDelete(4, item.t4._id)" class="text-red-400 hover:text-red-300 transition-colors" title="Hapus">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </td>
           </tr>
           <tr v-if="paginatedData.length === 0">
-            <td colspan="9" class="p-8 text-center text-gray-500">
+            <td :colspan="hasActionAccess ? 13 : 9" class="p-8 text-center text-gray-500">
               Tidak ada data yang cocok.
             </td>
           </tr>
@@ -69,12 +122,12 @@
       </table>
     </div>
 
+    <!-- Paginasi (Sama) -->
     <div class="bg-gray-900 border border-t-0 border-gray-700 rounded-b-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
       <div class="text-sm text-gray-400">
         Menampilkan <span class="font-bold text-white">{{ filteredData.length > 0 ? startIndex + 1 : 0 }}</span> 
         sampai <span class="font-bold text-white">{{ endIndex }}</span> dari <span class="font-bold text-white">{{ filteredData.length }}</span> entri
       </div>
-      
       <div class="flex items-center space-x-1">
         <button @click="prevPage" :disabled="currentPage === 1" class="px-3 py-1 rounded border border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Kembali</button>
         <button v-for="page in totalPages" :key="page" @click="goToPage(page)" :class="['px-3 py-1 rounded border text-sm transition-colors', currentPage === page ? 'bg-blue-600 border-blue-600 text-white font-bold' : 'border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white']">{{ page }}</button>
@@ -82,6 +135,45 @@
       </div>
     </div>
 
+    <!-- MODAL EDIT DATA -->
+    <div v-if="isEditModalOpen" class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-md">
+        <h2 class="text-xl font-bold text-white mb-4">Edit Timbangan {{ editData.scaleId }}</h2>
+        
+        <form @submit.prevent="submitEdit" class="space-y-4 mb-6">
+          <div>
+            <label class="block text-gray-300 text-sm font-semibold mb-2">Tanggal & Waktu</label>
+            <input 
+              v-model="editData.dateTime" 
+              type="text" 
+              required
+              class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500" 
+              placeholder="DD/MM/YYYY HH:MM:SS" 
+            />
+            <p class="text-xs text-gray-500 mt-1">Format wajib: DD/MM/YYYY HH:MM:SS (Contoh: 24/07/2026 15:30:00)</p>
+          </div>
+          <div>
+            <label class="block text-gray-300 text-sm font-semibold mb-2">Berat (Kg)</label>
+            <input 
+              v-model="editData.weight" 
+              type="number" 
+              step="0.01"
+              required
+              class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500" 
+            />
+          </div>
+          
+          <div class="flex justify-end space-x-3 pt-4">
+            <button type="button" @click="isEditModalOpen = false" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">Batal</button>
+            <button type="submit" :disabled="isSubmitting" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center">
+              {{ isSubmitting ? 'Menyimpan...' : 'Simpan Data' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL DOWNLOAD (Tetap Ada) -->
     <div v-if="isModalOpen" class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm">
       <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-md">
         <h2 class="text-xl font-bold text-white mb-4">Download Data Timbangan</h2>
@@ -125,11 +217,30 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue' // Tambahkan onUnmounted
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import axios from 'axios'
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
+// ==========================================================
+// KONFIGURASI OTENTIKASI & ROLE
+// ==========================================================
+const userRole = sessionStorage.getItem('role') || localStorage.getItem('role') || 'user'
+const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+
+// Validasi Role: Hanya Admin dan Operator yang boleh melihat aksi
+const hasActionAccess = computed(() => {
+  return userRole === 'admin' || userRole === 'operator' || userRole === 'dev'
+})
+
+const getHeaders = () => ({
+  headers: { Authorization: `Bearer ${token}` }
+})
+
+// ==========================================================
+// STATE & FUNGSI TABEL UTAMA
+// ==========================================================
 const isModalOpen = ref(false)
 const isDownloading = ref(false)
 const startDate = ref('')
@@ -140,38 +251,95 @@ const tableData = ref([])
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
-let pollingInterval = null // Variabel untuk menyimpan Interval ID
+let pollingInterval = null 
 
-// 1. PISAHKAN LOGIKA FETCH AGAR BISA DIPANGGIL BERULANG
 const fetchTableData = async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/semua-data`)
-    const data = await res.json()
-    tableData.value = data
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/timbangan/semua-data`)
+    tableData.value = res.data
   } catch (error) {
     console.error('Gagal memuat data Tabel:', error)
   }
 }
 
-// 2. JALANKAN SAAT DIMUAT & SET INTERVAL POLLING
 onMounted(() => {
-  fetchTableData() // Tarik data pertama kali
-  pollingInterval = setInterval(fetchTableData, 5000) // Update otomatis setiap 5 detik
+  fetchTableData() 
+  pollingInterval = setInterval(fetchTableData, 5000) 
 })
 
-// 3. BERSIHKAN MEMORI SAAT PINDAH HALAMAN
 onUnmounted(() => {
   if (pollingInterval) clearInterval(pollingInterval)
 })
 
+// ==========================================================
+// FUNGSI AKSI (EDIT & HAPUS) MENGGUNAKAN AXIOS
+// ==========================================================
+const isEditModalOpen = ref(false)
+const isSubmitting = ref(false)
+const editData = ref({
+  scaleId: null,
+  docId: null,
+  weight: 0,
+  dateTime: ''
+})
+
+const openEditModal = (scaleId, dataObj) => {
+  editData.value = {
+    scaleId: scaleId,
+    docId: dataObj._id,
+    weight: dataObj.w,
+    dateTime: dataObj.dt
+  }
+  isEditModalOpen.value = true
+}
+
+const submitEdit = async () => {
+  isSubmitting.value = true
+  try {
+    const { scaleId, docId, weight, dateTime } = editData.value
+    await axios.put(
+      `${import.meta.env.VITE_API_BASE_URL}/api/timbangan/edit/${scaleId}/${docId}`, 
+      { weight, dateTime },
+      getHeaders()
+    )
+    alert('Data timbangan berhasil diperbarui!')
+    isEditModalOpen.value = false
+    fetchTableData() // Refresh tabel
+  } catch (error) {
+    console.error(error)
+    alert(error.response?.data?.message || 'Gagal menyimpan perubahan.')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const handleDelete = async (scaleId, docId) => {
+  if (confirm(`Apakah Anda yakin ingin menghapus data Timbangan ${scaleId} ini secara permanen?`)) {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/api/timbangan/delete/${scaleId}/${docId}`,
+        getHeaders()
+      )
+      alert('Data berhasil dihapus!')
+      fetchTableData() // Refresh tabel
+    } catch (error) {
+      console.error(error)
+      alert(error.response?.data?.message || 'Gagal menghapus data.')
+    }
+  }
+}
+
+// ==========================================================
+// FUNGSI PAGINASI & FILTER
+// ==========================================================
 const filteredData = computed(() => {
   if (!searchQuery.value) return tableData.value
   const query = searchQuery.value.toLowerCase()
   return tableData.value.filter(item => 
-    item.t1.dt.toLowerCase().includes(query) ||
-    item.t2.dt.toLowerCase().includes(query) ||
-    item.t3.dt.toLowerCase().includes(query) ||
-    item.t4.dt.toLowerCase().includes(query)
+    (item.t1.dt && item.t1.dt.toLowerCase().includes(query)) ||
+    (item.t2.dt && item.t2.dt.toLowerCase().includes(query)) ||
+    (item.t3.dt && item.t3.dt.toLowerCase().includes(query)) ||
+    (item.t4.dt && item.t4.dt.toLowerCase().includes(query))
   )
 })
 
@@ -189,7 +357,9 @@ const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.v
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const goToPage = (page) => { currentPage.value = page }
 
-// FUNGSI KONVERSI TANGGAL DARI STRING KE TIMESTAMP
+// ==========================================================
+// FUNGSI DOWNLOAD (Excel & PDF)
+// ==========================================================
 const parseDateString = (dtStr) => {
   if (!dtStr || dtStr === '-') return null
   const [datePart, timePart] = dtStr.split(' ')
@@ -198,7 +368,6 @@ const parseDateString = (dtStr) => {
   return new Date(`${year}-${month}-${day}T${timePart || '00:00:00'}`).getTime()
 }
 
-// FUNGSI UTAMA DOWNLOAD
 const handleDownload = () => {
   if (!startDate.value || !endDate.value) {
     alert('Harap pilih Tanggal Mulai dan Tanggal Akhir secara lengkap!')
@@ -219,10 +388,8 @@ const handleDownload = () => {
         ].filter(d => d !== null)
 
         if (dates.length === 0) return false
-
         const minDate = Math.min(...dates)
         const maxDate = Math.max(...dates)
-
         return maxDate >= startT && minDate <= endT
       })
 
@@ -232,11 +399,8 @@ const handleDownload = () => {
         return
       }
 
-      if (exportFormat.value === 'excel') {
-        exportToExcel(dataToExport)
-      } else {
-        exportToPDF(dataToExport)
-      }
+      if (exportFormat.value === 'excel') exportToExcel(dataToExport)
+      else exportToPDF(dataToExport)
 
       startDate.value = ''
       endDate.value = ''
@@ -251,30 +415,22 @@ const handleDownload = () => {
   }, 500)
 }
 
-// FUNGSI EXPORT KE EXCEL
 const exportToExcel = (data) => {
   const formattedData = data.map((item, idx) => ({
     'No': idx + 1,
-    'Waktu T1': item.t1.dt,
-    'Berat T1 (Kg)': item.t1.w > 0 ? item.t1.w : '-',
-    'Waktu T2': item.t2.dt,
-    'Berat T2 (Kg)': item.t2.w > 0 ? item.t2.w : '-',
-    'Waktu T3': item.t3.dt,
-    'Berat T3 (Kg)': item.t3.w > 0 ? item.t3.w : '-',
-    'Waktu T4': item.t4.dt,
-    'Berat T4 (Kg)': item.t4.w > 0 ? item.t4.w : '-'
+    'Waktu T1': item.t1.dt, 'Berat T1 (Kg)': item.t1.w > 0 ? item.t1.w : '-',
+    'Waktu T2': item.t2.dt, 'Berat T2 (Kg)': item.t2.w > 0 ? item.t2.w : '-',
+    'Waktu T3': item.t3.dt, 'Berat T3 (Kg)': item.t3.w > 0 ? item.t3.w : '-',
+    'Waktu T4': item.t4.dt, 'Berat T4 (Kg)': item.t4.w > 0 ? item.t4.w : '-'
   }))
-
   const worksheet = XLSX.utils.json_to_sheet(formattedData)
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, "Data Timbangan")
   XLSX.writeFile(workbook, `Laporan_TimbangHub_${startDate.value}_sd_${endDate.value}.xlsx`)
 }
 
-// FUNGSI EXPORT KE PDF
 const exportToPDF = (data) => {
   const doc = new jsPDF('landscape', 'pt', 'a4')
-  
   doc.setFontSize(16)
   doc.text("Laporan Data Timbangan Gudang (TimbangHub)", 40, 40)
   doc.setFontSize(10)
@@ -288,9 +444,7 @@ const exportToPDF = (data) => {
       { content: 'Timbangan 3', colSpan: 2, styles: { halign: 'center' } },
       { content: 'Timbangan 4', colSpan: 2, styles: { halign: 'center' } }
     ],
-    [
-      'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)'
-    ]
+    ['Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)', 'Waktu', 'Berat (Kg)']
   ]
 
   const tableRows = data.map((item, idx) => [
@@ -302,10 +456,7 @@ const exportToPDF = (data) => {
   ])
 
   autoTable(doc, {
-    head: tableColumn,
-    body: tableRows,
-    startY: 80,
-    theme: 'grid',
+    head: tableColumn, body: tableRows, startY: 80, theme: 'grid',
     headStyles: { fillColor: [31, 41, 55], textColor: 255 },
     styles: { fontSize: 8, cellPadding: 4, halign: 'center' },
   })
