@@ -3,6 +3,7 @@ import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import ScaleDetailView from '../views/ScaleDetailView.vue'
 import DataTableView from '../views/DataTableView.vue'
+import UserManagementView from '../views/UserManagementView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,12 @@ const router = createRouter({
       name: 'data-table',
       component: DataTableView,
       meta: { requiresAuth: true } // Membutuhkan login
+    },
+    {
+      path: '/users',
+      name: 'user-management',
+      component: UserManagementView,
+      meta: { requiresAuth: true }
     }
   ]
 })

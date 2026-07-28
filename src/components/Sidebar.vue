@@ -17,11 +17,11 @@
       'w-64 md:w-20 md:hover:w-64', 
       isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0' 
     ]">
-     
+      
       <div class="h-16 md:h-20 flex shrink-0 items-center justify-between md:justify-center px-4 md:p-4 border-b border-gray-700 bg-gray-900">
         <img src="../assets/84368.png" class="h-10 w-auto hidden md:block md:group-hover:hidden transition-opacity" alt="Icon" />
         <img src="../assets/84369.png" class="h-6 w-auto hidden md:group-hover:block transition-opacity" alt="Text Logo" />
-       
+        
         <img src="../assets/84369.png" class="h-5 w-auto md:hidden" alt="Text Logo" />
         <button @click="isOpen = false" class="md:hidden text-gray-400 hover:text-white">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -37,6 +37,14 @@
         <router-link @click="isOpen = false" to="/data" :class="['flex items-center px-3 py-3 rounded-xl transition-all duration-200', route.path === '/data' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-700 hover:text-white']">
           <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
           <span class="ml-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 whitespace-nowrap transition-opacity font-semibold">Tabel Data</span>
+        </router-link>
+
+        <!-- ========================================================= -->
+        <!-- MENU MANAJEMEN USER (HANYA MUNCUL JIKA ROLE === ADMIN) -->
+        <!-- ========================================================= -->
+        <router-link v-if="role === 'admin' || role === 'dev'" @click="isOpen = false" to="/users" :class="['flex items-center px-3 py-3 rounded-xl transition-all duration-200', route.path === '/users' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-700 hover:text-white']">
+          <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          <span class="ml-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 whitespace-nowrap transition-opacity font-semibold">Manajemen User</span>
         </router-link>
 
         <div class="pt-4 pb-2">
@@ -95,6 +103,8 @@ onMounted(() => {
 const handleLogout = () => {
   // Bersihkan semua sesi di sessionStorage
   sessionStorage.clear()
+  // Opsional: Bersihkan localStorage jika Anda juga menggunakannya untuk menyimpan token JWT
+  localStorage.clear() 
   // Tendang kembali ke halaman login
   router.push('/login')
 }
