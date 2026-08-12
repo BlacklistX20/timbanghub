@@ -11,7 +11,7 @@
       <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
         <h2 class="text-gray-400 text-sm font-semibold mb-1">Status Mesin</h2>
         <div class="flex items-center space-x-3 mt-2">
-          <div :class="scaleData.status === 'running' ? 'bg-green-500' : 'bg-red-500'" class="w-4 h-4 rounded-full animate-pulse transition-colors duration-300"></div>
+          <div :class="scaleData.status === 'connected' ? 'bg-green-500' : 'bg-red-500'" class="w-4 h-4 rounded-full animate-pulse transition-colors duration-300"></div>
           <span class="text-2xl font-bold text-white capitalize">{{ scaleData.status }}</span>
         </div>
       </div>
@@ -80,8 +80,10 @@ const props = defineProps(['id'])
 let pollingInterval = null // Variabel untuk menyimpan ID Interval
 
 // State Default
+// status default 'unknown' (bukan 'stopped') - konsisten dengan ENUM backend:
+// connected | disconnected | error | unknown
 const scaleData = ref({
-  status: 'stopped',
+  status: 'unknown',
   realtime: 0,
   totalKg: 0,
   totalSacks: 0,
@@ -132,6 +134,8 @@ const fetchDetailData = async () => {
     }
 
     // Update Data Grafik
+    // Catatan: chart.labels sudah berupa string "HH:mm" jadi dari backend
+    // (bukan tanggal ISO mentah), jadi tidak perlu diformat ulang di sini.
     chartData.value = {
       labels: data.chart.labels,
       datasets: [{

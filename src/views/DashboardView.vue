@@ -57,11 +57,13 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
+// Nilai awal 'unknown' sebelum data pertama masuk, konsisten dengan
+// ENUM status backend: connected | disconnected | error | unknown
 const scales = ref([
-  { id: 1, status: 'stopped', realtimeWeight: 0 },
-  { id: 2, status: 'stopped', realtimeWeight: 0 },
-  { id: 3, status: 'stopped', realtimeWeight: 0 },
-  { id: 4, status: 'stopped', realtimeWeight: 0 },
+  { id: 1, status: 'unknown', realtimeWeight: 0 },
+  { id: 2, status: 'unknown', realtimeWeight: 0 },
+  { id: 3, status: 'unknown', realtimeWeight: 0 },
+  { id: 4, status: 'unknown', realtimeWeight: 0 },
 ])
 
 const totalWeight = ref(0)
@@ -69,6 +71,7 @@ const totalSacks = ref(0)
 const dailySacks = ref(0)
 let pollingInterval = null // Variabel untuk menyimpan ID interval
 
+// 'running' dianggap timbangan aktif/beroperasi normal
 const activeScales = computed(() => scales.value.filter(s => s.status === 'running').length)
 
 // Pisahkan fungsi fetch agar bisa dipanggil berulang-ulang

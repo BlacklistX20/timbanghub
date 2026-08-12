@@ -48,7 +48,7 @@
             <th class="p-3 border-b border-r border-gray-700">Berat (Kg)</th>
             <th v-if="hasActionAccess" class="p-3 border-b border-r border-gray-700 w-20">Aksi</th>
             <!-- Timbangan 4 -->
-            <th class="p-3 border-b border-r border-gray-700">Waktu</th>
+            <th class="p-3 border-b border-gray-700">Waktu</th>
             <th class="p-3 border-b border-gray-700">Berat (Kg)</th>
             <th v-if="hasActionAccess" class="p-3 border-b border-gray-700 w-20">Aksi</th>
           </tr>
@@ -58,7 +58,7 @@
             <td class="p-4 border-b border-r border-gray-700 text-center">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
             
             <!-- TIMBANGAN 1 -->
-            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t1.dt }}</td>
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ formatDateTime(item.t1.dt) }}</td>
             <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-blue-300">{{ item.t1.w > 0 ? item.t1.w.toFixed(2) : '-' }}</td>
             <td v-if="hasActionAccess" class="p-2 border-b border-r border-gray-700 text-center">
               <div v-if="item.t1._id" class="flex items-center justify-center space-x-2">
@@ -72,7 +72,7 @@
             </td>
             
             <!-- TIMBANGAN 2 -->
-            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t2.dt }}</td>
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ formatDateTime(item.t2.dt) }}</td>
             <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-emerald-300">{{ item.t2.w > 0 ? item.t2.w.toFixed(2) : '-' }}</td>
             <td v-if="hasActionAccess" class="p-2 border-b border-r border-gray-700 text-center">
               <div v-if="item.t2._id" class="flex items-center justify-center space-x-2">
@@ -86,7 +86,7 @@
             </td>
             
             <!-- TIMBANGAN 3 -->
-            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t3.dt }}</td>
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ formatDateTime(item.t3.dt) }}</td>
             <td class="p-3 border-b border-r border-gray-700 text-center font-bold text-orange-300">{{ item.t3.w > 0 ? item.t3.w.toFixed(2) : '-' }}</td>
             <td v-if="hasActionAccess" class="p-2 border-b border-r border-gray-700 text-center">
               <div v-if="item.t3._id" class="flex items-center justify-center space-x-2">
@@ -100,7 +100,7 @@
             </td>
             
             <!-- TIMBANGAN 4 -->
-            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ item.t4.dt }}</td>
+            <td class="p-3 border-b border-gray-700 font-mono text-xs text-center">{{ formatDateTime(item.t4.dt) }}</td>
             <td class="p-3 border-b border-gray-700 text-center font-bold text-purple-300">{{ item.t4.w > 0 ? item.t4.w.toFixed(2) : '-' }}</td>
             <td v-if="hasActionAccess" class="p-2 border-b border-gray-700 text-center">
               <div v-if="item.t4._id" class="flex items-center justify-center space-x-2">
@@ -145,12 +145,12 @@
             <label class="block text-gray-300 text-sm font-semibold mb-2">Tanggal & Waktu</label>
             <input 
               v-model="editData.dateTime" 
-              type="text" 
+              type="datetime-local" 
+              step="1"
               required
-              class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500" 
-              placeholder="DD/MM/YYYY HH:MM:SS" 
+              class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 [color-scheme:dark]" 
             />
-            <p class="text-xs text-gray-500 mt-1">Format wajib: DD/MM/YYYY HH:MM:SS (Contoh: 24/07/2026 15:30:00)</p>
+            <p class="text-xs text-gray-500 mt-1">Waktu mengikuti WITA (Asia/Makassar).</p>
           </div>
           <div>
             <label class="block text-gray-300 text-sm font-semibold mb-2">Berat (Kg)</label>
@@ -230,6 +230,7 @@ const userRole = sessionStorage.getItem('role') || localStorage.getItem('role') 
 const token = localStorage.getItem('token') || sessionStorage.getItem('token')
 
 // Validasi Role: Hanya Admin dan Operator yang boleh melihat aksi
+// (cocok dengan requireAuth(['operator','admin','dev']) di routes/timbangan.js backend)
 const hasActionAccess = computed(() => {
   return userRole === 'admin' || userRole === 'operator' || userRole === 'dev'
 })
@@ -237,6 +238,52 @@ const hasActionAccess = computed(() => {
 const getHeaders = () => ({
   headers: { Authorization: `Bearer ${token}` }
 })
+
+// ==========================================================
+// HELPER TANGGAL/WAKTU
+// Backend sekarang mengirim recordedAt sebagai ISO string (mis.
+// "2026-08-08T02:30:00.000Z"), bukan lagi string "DD/MM/YYYY HH:mm:ss"
+// custom dari MongoDB. Dua helper di bawah menjembatani perbedaan itu.
+// ==========================================================
+
+// Format ISO -> "DD/MM/YYYY HH:mm:ss" (WITA) untuk ditampilkan di tabel,
+// dipakai saat pencarian, dan disertakan di file Excel/PDF
+const formatDateTime = (isoString) => {
+  if (!isoString || isoString === '-') return '-'
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return '-'
+  const formatted = date.toLocaleString('id-ID', {
+    timeZone: 'Asia/Makassar',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+  return formatted.replace(/\./g, ':').replace(',', '')
+}
+
+// Format ISO -> "YYYY-MM-DDTHH:mm:ss" (WITA, tanpa info zona waktu) untuk
+// mengisi <input type="datetime-local"> di modal edit. Dihitung manual lewat
+// Intl.DateTimeFormat (bukan getHours() dkk) supaya tidak tercampur zona
+// waktu browser si pengguna - komponen waktunya harus tetap WITA.
+const toDatetimeLocalValue = (isoString) => {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return ''
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Makassar',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).formatToParts(date)
+
+  const get = (type) => parts.find(p => p.type === type)?.value
+  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}`
+}
 
 // ==========================================================
 // STATE & FUNGSI TABEL UTAMA
@@ -288,7 +335,7 @@ const openEditModal = (scaleId, dataObj) => {
     scaleId: scaleId,
     docId: dataObj._id,
     weight: dataObj.w,
-    dateTime: dataObj.dt
+    dateTime: toDatetimeLocalValue(dataObj.dt)
   }
   isEditModalOpen.value = true
 }
@@ -297,9 +344,14 @@ const submitEdit = async () => {
   isSubmitting.value = true
   try {
     const { scaleId, docId, weight, dateTime } = editData.value
+    // <input type="datetime-local"> tidak membawa info zona waktu - tambahkan
+    // offset +08:00 (WITA) secara eksplisit, supaya backend menafsirkan waktunya
+    // dengan benar apa pun zona waktu server itu sendiri (lihat catatan di
+    // routes/timbangan.js: dateTime WAJIB format ISO, bukan DD/MM/YYYY lagi)
+    const dateTimeWithOffset = `${dateTime}+08:00`
     await axios.put(
       `${import.meta.env.VITE_API_BASE_URL}/api/timbangan/edit/${scaleId}/${docId}`, 
-      { weight, dateTime },
+      { weight, dateTime: dateTimeWithOffset },
       getHeaders()
     )
     alert('Data timbangan berhasil diperbarui!')
@@ -336,10 +388,10 @@ const filteredData = computed(() => {
   if (!searchQuery.value) return tableData.value
   const query = searchQuery.value.toLowerCase()
   return tableData.value.filter(item => 
-    (item.t1.dt && item.t1.dt.toLowerCase().includes(query)) ||
-    (item.t2.dt && item.t2.dt.toLowerCase().includes(query)) ||
-    (item.t3.dt && item.t3.dt.toLowerCase().includes(query)) ||
-    (item.t4.dt && item.t4.dt.toLowerCase().includes(query))
+    formatDateTime(item.t1.dt).toLowerCase().includes(query) ||
+    formatDateTime(item.t2.dt).toLowerCase().includes(query) ||
+    formatDateTime(item.t3.dt).toLowerCase().includes(query) ||
+    formatDateTime(item.t4.dt).toLowerCase().includes(query)
   )
 })
 
@@ -360,12 +412,13 @@ const goToPage = (page) => { currentPage.value = page }
 // ==========================================================
 // FUNGSI DOWNLOAD (Excel & PDF)
 // ==========================================================
+// Disederhanakan drastis: dt sekarang ISO string, jadi new Date() bisa
+// langsung mem-parsingnya tanpa perlu split manual "DD/MM/YYYY HH:mm:ss"
+// seperti versi lama (yang akan selalu gagal/NaN kalau dipaksakan ke format ISO).
 const parseDateString = (dtStr) => {
   if (!dtStr || dtStr === '-') return null
-  const [datePart, timePart] = dtStr.split(' ')
-  if (!datePart) return null
-  const [day, month, year] = datePart.split('/')
-  return new Date(`${year}-${month}-${day}T${timePart || '00:00:00'}`).getTime()
+  const timestamp = new Date(dtStr).getTime()
+  return isNaN(timestamp) ? null : timestamp
 }
 
 const handleDownload = () => {
@@ -418,10 +471,10 @@ const handleDownload = () => {
 const exportToExcel = (data) => {
   const formattedData = data.map((item, idx) => ({
     'No': idx + 1,
-    'Waktu T1': item.t1.dt, 'Berat T1 (Kg)': item.t1.w > 0 ? item.t1.w : '-',
-    'Waktu T2': item.t2.dt, 'Berat T2 (Kg)': item.t2.w > 0 ? item.t2.w : '-',
-    'Waktu T3': item.t3.dt, 'Berat T3 (Kg)': item.t3.w > 0 ? item.t3.w : '-',
-    'Waktu T4': item.t4.dt, 'Berat T4 (Kg)': item.t4.w > 0 ? item.t4.w : '-'
+    'Waktu T1': formatDateTime(item.t1.dt), 'Berat T1 (Kg)': item.t1.w > 0 ? item.t1.w : '-',
+    'Waktu T2': formatDateTime(item.t2.dt), 'Berat T2 (Kg)': item.t2.w > 0 ? item.t2.w : '-',
+    'Waktu T3': formatDateTime(item.t3.dt), 'Berat T3 (Kg)': item.t3.w > 0 ? item.t3.w : '-',
+    'Waktu T4': formatDateTime(item.t4.dt), 'Berat T4 (Kg)': item.t4.w > 0 ? item.t4.w : '-'
   }))
   const worksheet = XLSX.utils.json_to_sheet(formattedData)
   const workbook = XLSX.utils.book_new()
@@ -449,10 +502,10 @@ const exportToPDF = (data) => {
 
   const tableRows = data.map((item, idx) => [
     idx + 1,
-    item.t1.dt, item.t1.w > 0 ? item.t1.w.toFixed(2) : '-',
-    item.t2.dt, item.t2.w > 0 ? item.t2.w.toFixed(2) : '-',
-    item.t3.dt, item.t3.w > 0 ? item.t3.w.toFixed(2) : '-',
-    item.t4.dt, item.t4.w > 0 ? item.t4.w.toFixed(2) : '-'
+    formatDateTime(item.t1.dt), item.t1.w > 0 ? item.t1.w.toFixed(2) : '-',
+    formatDateTime(item.t2.dt), item.t2.w > 0 ? item.t2.w.toFixed(2) : '-',
+    formatDateTime(item.t3.dt), item.t3.w > 0 ? item.t3.w.toFixed(2) : '-',
+    formatDateTime(item.t4.dt), item.t4.w > 0 ? item.t4.w.toFixed(2) : '-'
   ])
 
   autoTable(doc, {
