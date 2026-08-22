@@ -34,14 +34,14 @@
         
         <div class="flex justify-between items-start mb-4">
           <h3 class="font-bold text-lg text-white">Timbangan {{ scale.id }}</h3>
-          <span :class="scale.status === 'running' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'" class="px-3 py-1 text-xs font-semibold rounded-full border transition-colors duration-300">
+          <span :class="scale.status === 'connected' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'" class="px-3 py-1 text-xs font-semibold rounded-full border transition-colors duration-300">
             {{ scale.status.toUpperCase() }}
           </span>
         </div>
 
         <div class="mt-4">
           <p class="text-gray-400 text-sm mb-1">Berat Saat Ini</p>
-          <div class="text-3xl font-mono font-bold transition-all duration-300" :class="scale.status === 'running' ? 'text-blue-400' : 'text-gray-500'">
+          <div class="text-3xl font-mono font-bold transition-all duration-300" :class="scale.status === 'connected' ? 'text-blue-400' : 'text-gray-500'">
             {{ scale.realtimeWeight.toFixed(2) }} <span class="text-base text-gray-400">Kg</span>
           </div>
         </div>
@@ -71,8 +71,8 @@ const totalSacks = ref(0)
 const dailySacks = ref(0)
 let pollingInterval = null // Variabel untuk menyimpan ID interval
 
-// 'running' dianggap timbangan aktif/beroperasi normal
-const activeScales = computed(() => scales.value.filter(s => s.status === 'running').length)
+// 'connected' dianggap timbangan aktif/beroperasi normal
+const activeScales = computed(() => scales.value.filter(s => s.status === 'connected').length)
 
 // Pisahkan fungsi fetch agar bisa dipanggil berulang-ulang
 const fetchDashboardData = async () => {
